@@ -1,292 +1,242 @@
-📘 UniversalCompressor
+# UniversalCompressor
 
-UniversalCompressor es una aplicación de escritorio desarrollada en C# (.NET 8, Windows Forms) que permite comprimir y descomprimir archivos de texto utilizando tres algoritmos clásicos: Huffman, LZ77 y LZ78.
+UniversalCompressor es una aplicación de escritorio desarrollada en **C# (.NET 8, Windows Forms)** que permite **comprimir y descomprimir archivos de texto** utilizando tres algoritmos clásicos: **Huffman, LZ77 y LZ78**.
 
-El programa cumple con los requerimientos de la tarea extraclase del curso Estructuras de Datos II, incluyendo compresión de uno o varios archivos .txt, generación de un solo archivo .myzip, y la recuperación completa de los archivos originales.
+El programa cumple con los requerimientos de la tarea extraclase del curso **Estructuras de Datos II**, incluyendo compresión de uno o varios archivos `.txt`, generación de un archivo `.myzip` único, y la restauración completa de los archivos originales.
 
-🎯 Objetivos del programa
+---
 
-Comprimir uno o más archivos .txt en un único archivo .myzip.
+# 🎯 Objetivos del programa
 
-Descomprimir un .myzip y recuperar todos los archivos .txt originales.
+- Comprimir uno o más archivos `.txt` en un único archivo `.myzip`.
+- Descomprimir un `.myzip` y recuperar todos los archivos `.txt` originales.
+- Implementar y utilizar los algoritmos:
+  - **Huffman**
+  - **LZ77**
+  - **LZ78**
+- Mostrar estadísticas al usuario:
+  - Tiempo de ejecución
+  - Memoria utilizada
+  - Razón de compresión
 
-Implementar los algoritmos:
+---
 
-Huffman
+# 🖥️ Requisitos para ejecutar el programa
 
-LZ77
+## 1. Instalar Visual Studio 2022 (o superior)
+Con la carga de trabajo **Desarrollo de escritorio .NET**.
 
-LZ78
-
-Mostrar estadísticas al usuario:
-
-Tiempo de ejecución
-
-Memoria utilizada
-
-Razón de compresión
-
-🖥️ Requisitos para ejecutar el programa
-
-Siga estos pasos para ejecutar el proyecto en la computadora del profesor:
-
-1. Instalar Visual Studio 2022 (o superior)
-
-Con la carga de trabajo:
-
-Desarrollo de escritorio .NET
-
-2. Instalar .NET 8 SDK
-
+## 2. Instalar .NET 8 SDK
 https://dotnet.microsoft.com/en-us/download
 
-3. Clonar el repositorio
+## 3. Clonar el repositorio
+```bash
 git clone <URL_DEL_REPOSITORIO>
+```
 
-4. Abrir la solución en Visual Studio
+## 4. Abrir la solución en Visual Studio
+```
 Archivo → Abrir → Proyecto o solución → UniversalCompressor.sln
+```
 
-5. Seleccionar el proyecto de inicio
+## 5. Establecer proyecto de inicio
+```
 Clic derecho en UniversalCompressor → Establecer como proyecto de inicio
+```
 
-6. Ejecutar
-
-Presione F5
-o
-
+## 6. Ejecutar
+Presione **F5**, o  
+```
 Depurar → Iniciar depuración
+```
 
+---
 
-La ventana de la aplicación se abrirá con la interfaz gráfica lista para usar.
+# 🧱 Interfaz del programa
 
-🧱 Interfaz del programa
-📌 Entrada de archivos
+## Entrada de archivos
+- TextBox para seleccionar archivos mediante "Buscar…"
+- Soporte para arrastrar y soltar `.txt` o `.myzip`
+- ListBox para agregar múltiples archivos `.txt`
 
-TextBox para seleccionar archivo mediante el botón “Buscar…”
+## Archivo de salida
+- TextBox para ruta de salida
+- Botón “Guardar como…”
+- Extensiones automáticas:
+  - `.txt` → `.myzip`
+  - `.myzip` → carpeta con `.txt`
 
-Soporte para arrastrar y soltar .txt o .myzip
+## Selección de algoritmo
+- Huffman  
+- LZ77  
+- LZ78  
 
-ListBox para agregar múltiples .txt simultáneamente
+## Acciones
+- Comprimir
+- Descomprimir
 
-📌 Archivo de salida
+## Resultados
+- Estadísticas detalladas
+- Mensajes de estado en barra inferior
 
-TextBox para seleccionar archivo o carpeta de salida
+---
 
-Botón “Guardar como…”
+# 📦 Formato del archivo `.myzip` (propio del proyecto)
 
-Extensión ajustada automáticamente:
+Este proyecto utiliza un formato personalizado, no compatible con ZIP estándar.
 
-Entrada .txt → salida .myzip
+### Estructura del archivo:
 
-Entrada .myzip → salida .txt
-
-📌 Selección de algoritmo
-
-Huffman
-
-LZ77
-
-LZ78
-
-📌 Acciones principales
-
-Comprimir
-
-Descomprimir
-
-📌 Resultados
-
-Estadísticas detalladas
-
-Mensajes de estado en barra inferior
-
-📦 Formato del archivo .myzip (Propio del proyecto)
-
-Este proyecto usa un formato propio, no compatible con ZIP estándar.
-
-Estructura del archivo:
+```
 [int32 cantidadDeArchivos]
 
 Por cada archivo:
     [int32 longitudNombre]
     [bytes nombre en UTF-8]
     [int32 longitudComprimido]
-    [bytes comprimidos dependiendo del algoritmo]
+    [bytes comprimidos (según algoritmo)]
+```
 
+Cada archivo se comprime individualmente y luego se empaqueta dentro del `.myzip`.
 
-Cada archivo se comprime individualmente, pero todos se almacenan dentro del mismo .myzip.
+---
 
-🧠 Algoritmos implementados
-1. Huffman
-Compresión
+# 🧠 Algoritmos implementados
 
-Calcula frecuencias de bytes (0–255)
+## 1. Huffman
 
-Construye el árbol de Huffman con prioridad por frecuencia
-
-Genera códigos binarios por símbolo
+### Compresión
+- Calcula frecuencias de bytes (0–255).
+- Construye un árbol de Huffman.
+- Genera códigos binarios por símbolo.
 
 Contenido del archivo comprimido:
+- 256 int32 (frecuencias)
+- Bits del archivo codificado
 
-256 frecuencias (int32)
+### Descompresión
+- Reconstruye el árbol a partir de las frecuencias.
+- Interpreta los bits para reconstruir cada símbolo.
+- Detecta archivos corruptos.
 
-Bits codificados del texto original
+---
 
-Descompresión
+## 2. LZ77 (implementación simple)
 
-Reconstruye el árbol desde las frecuencias
+### Compresión
+- Utiliza una ventana deslizante.
+- Encuentra coincidencias anteriores.
+- Codifica como tuplas:
 
-Interpreta los bits para regenerar cada símbolo
-
-Detecta archivos corruptos o incompatibles
-
-2. LZ77 (Implementación simple)
-Compresión
-
-Utiliza ventana deslizante
-
-Encuentra coincidencias previas
-
-Codifica como tuplas:
-
+```
 (offset, length, nextSymbol)
-
+```
 
 Serialización:
-
+```
 [int32 cantidadDeTuplas]
+[offset][length][nextSymbol]
+```
 
-Por cada tupla:
-    [int32 offset]
-    [int32 length]
-    [byte nextSymbol]
+### Descompresión
+- Copia fragmentos previos desde la salida.
+- Añade el siguiente símbolo.
+- Maneja errores de formato.
 
-Descompresión
+---
 
-Copia fragmentos previos desde la salida
+## 3. LZ78 (implementación simple)
 
-Añade el siguiente símbolo
+### Compresión
+- Mantiene un diccionario incremental.
+- Genera pares:
 
-Validaciones de seguridad y formato
+```
+(indexDictionary, nextSymbol)
+```
 
-3. LZ78 (Implementación simple)
-Compresión
-
-Mantiene diccionario incremental
-
-Genera pares:
-
-(dicIndex, nextSymbol)
-
-
-Serialización:
-
+Serializa:
+```
 [int32 cantidadDePares]
-[int32 dicIndex][byte symbol]
+[index][symbol]
+```
 
-Descompresión
+### Descompresión
+- Reconstruye cadenas usando el diccionario.
+- Maneja inconsistencias o archivos corruptos.
 
-Reconstruye cadenas basadas en el diccionario
+---
 
-Maneja inconsistencias y errores de formato
+# 📊 Estadísticas mostradas
 
-📊 Estadísticas mostradas
+Después de cada operación se muestra:
 
-Después de cada operación el programa muestra:
-
-Operación: Compresión / Descompresión
-
-Algoritmo utilizado
-
-Archivos de entrada
-
-Archivo/carpeta de salida
-
-Tamaño original total (bytes)
-
-Tamaño comprimido (bytes)
-
-Razón de compresión
-
-Porcentaje de reducción
-
-Tiempo de ejecución (ms)
-
-Memoria utilizada (bytes)
+- Operación (compresión/descompresión)
+- Algoritmo utilizado
+- Archivos procesados
+- Ruta de salida
+- Tamaño original total (bytes)
+- Tamaño comprimido (bytes)
+- Razón comprimido/original
+- Porcentaje de reducción
+- Tiempo de ejecución (ms)
+- Memoria utilizada (bytes)
 
 En caso de error:
 
-ERROR: <mensaje explicativo>
+```
+ERROR: <detalle del error>
+```
 
-🧩 Casos de uso
-1️⃣ Comprimir un archivo .txt
+---
 
-Seleccione un .txt
+# 🧩 Casos de uso
 
-Elija un .myzip de salida
+## 1. Comprimir un archivo `.txt`
+1. Seleccione un archivo `.txt`.
+2. Elija archivo `.myzip` de salida.
+3. Seleccione algoritmo.
+4. Presione **Comprimir**.
 
-Seleccione algoritmo
+## 2. Comprimir varios `.txt`
+1. Agregue varios archivos con “Agregar archivos…”.
+2. Seleccione un `.myzip` de salida.
+3. Seleccione algoritmo.
+4. Presione **Comprimir**.
 
-Pulse Comprimir
+## 3. Descomprimir un `.myzip`
+1. Seleccione un archivo `.myzip`.
+2. Elija una carpeta de salida.
+3. Seleccione el mismo algoritmo con el que se comprimió.
+4. Presione **Descomprimir**.
 
-2️⃣ Comprimir varios .txt
+---
 
-Agregue varios archivos desde “Agregar archivos…”
+# ⚠️ Validaciones importantes
 
-Seleccione archivo .myzip de salida
+El programa evita:
 
-Algoritmo
+- Comprimir `.myzip` → `.txt`
+- Descomprimir `.txt` → `.myzip`
+- Usar algoritmo incorrecto al descomprimir
+- Archivos corruptos
+- Extensiones incorrectas
+- Entradas duplicadas
 
-Comprimir
+Se muestra un mensaje claro en caso de error.
 
-3️⃣ Descomprimir un .myzip
+---
 
-Seleccione .myzip
+# ✔ Estado del proyecto
 
-Seleccione carpeta de salida
+Implementado completamente:
 
-Seleccione el algoritmo correcto
-
-Descomprimir
-
-⚠️ Validaciones importantes
-
-La aplicación evita:
-
-Comprimir .myzip → .txt
-
-Descomprimir .txt → .myzip
-
-Usar algoritmo incorrecto al descomprimir
-
-Archivos corruptos
-
-Extensiones inválidas
-
-Entradas duplicadas
-
-En caso de equivocación, se muestra un mensaje claro en la barra inferior.
-
-✔️ Estado del proyecto
-
-El sistema implementa completamente:
-
-Huffman
-
-LZ77
-
-LZ78
-
-Compresión multinivel
-
-Descompresión múltiple
-
-Interfaz Windows Forms
-
-Estadísticas completas
-
-Validaciones
-
-Formato .myzip propio
-
-Todo está listo y funcionando según lo requerido por el profesor.
+- Huffman  
+- LZ77  
+- LZ78  
+- Compresión múltiple  
+- Descompresión múltiple  
+- Interfaz gráfica  
+- Estadísticas completas  
+- Validaciones robustas  
+- Formato `.myzip` propio  
