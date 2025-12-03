@@ -5,6 +5,24 @@ VisualStudioVersion = 17.14.36518.9 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniversalCompressor", "UniversalCompressor\UniversalCompressor.csproj", "{FED51BCA-F4B0-4DFD-80C1-467FB4CEF046}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Algorithms", "Algorithms", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+	ProjectSection(SolutionItems) = preProject
+		ICompressionAlgorithm.cs = ICompressionAlgorithm.cs
+		HuffmanAlgorithm.cs = HuffmanAlgorithm.cs
+		LZ77Algorithm.cs = LZ77Algorithm.cs
+		LZ78Algorithm.cs = LZ78Algorithm.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Models", "Models", "{65CC059B-DF57-4077-89E0-CEA8302F7303}"
+	ProjectSection(SolutionItems) = preProject
+		CompressionResult.cs = CompressionResult.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{E3C6C257-C094-4964-A588-B20B125C804E}"
+	ProjectSection(SolutionItems) = preProject
+		CompressionService.cs = CompressionService.cs
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
