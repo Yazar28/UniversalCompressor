@@ -9,119 +9,126 @@ namespace UniversalCompressor.Services
 {
     public class CompressionService
     {
-        private readonly List<ICompressionAlgorithm> _algorithms;
+        private readonly Dictionary<string, ICompressionAlgorithm> _algorithms;
 
         public CompressionService()
         {
-            _algorithms = new List<ICompressionAlgorithm>
+            _algorithms = new Dictionary<string, ICompressionAlgorithm>(StringComparer.OrdinalIgnoreCase)
             {
-                new HuffmanAlgorithm(),
-                new LZ77Algorithm(),
-                new LZ78Algorithm()
+                ["Huffman"] = new HuffmanAlgorithm(),
+                ["LZ77"] = new LZ77Algorithm(),
+                ["LZ78"] = new LZ78Algorithm()
             };
         }
 
         public IEnumerable<ICompressionAlgorithm> GetAlgorithms()
         {
-            return _algorithms;
+            return _algorithms.Values;
         }
 
-        private ICompressionAlgorithm? FindAlgorithm(string name)
+        private bool TryGetAlgorithm(string name, out ICompressionAlgorithm algorithm)
         {
-            foreach (var alg in _algorithms)
+            return _algorithms.TryGetValue(name, out algorithm!);
+        }
+
+        public CompressionResult Compress(string algorithmName, string inputFilePath, string outputFilePath)
+        {
+            if (!TryGetAlgorithm(algorithmName, out var algorithm))
             {
-                if (string.Equals(alg.Name, name, StringComparison.OrdinalIgnoreCase))
-                    return alg;
+                return CompressionResult.ErrorResult(
+                    algorithmName,
+                    inputFilePath,
+                    outputFilePath,
+                    "Algoritmo de compresión no encontrado.");
             }
-            return null;
-        }
-
-        public CompressionResult Compress(string algorithmName, string inputPath, string outputPath)
-        {
-            var result = new CompressionResult
-            {
-                AlgorithmName = algorithmName,
-                InputFilePath = inputPath,
-                OutputFilePath = outputPath
-            };
 
             try
             {
-                var algorithm = FindAlgorithm(algorithmName);
-                if (algorithm == null)
-                {
-                    result.Success = false;
-                    result.ErrorMessage = "Algoritmo no encontrado.";
-                    return result;
-                }
+                var originalBytes = File.ReadAllBytes(inputFilePath);
+                long originalSize = originalBytes.LongLength;
 
-                long originalSize = new FileInfo(inputPath).Length;
-                result.OriginalSizeBytes = originalSize;
+                var stopwatch = Stopwatch.StartNew();
+                long memoryBefore = GC.GetTotalMemory(true);
 
-                long memBefore = GC.GetTotalMemory(true);
-                var sw = Stopwatch.StartNew();
+                var compressedBytes = algorithm.Compress(originalBytes);
 
-                algorithm.Compress(inputPath, outputPath);
+                long memoryAfter = GC.GetTotalMemory(false);
+                stopwatch.Stop();
 
-                sw.Stop();
-                long memAfter = GC.GetTotalMemory(false);
+                File.WriteAllBytes(outputFilePath, compressedBytes);
 
-                result.CompressedSizeBytes = new FileInfo(outputPath).Length;
-                result.ElapsedTime = sw.Elapsed;
-                result.MemoryUsedBytes = memAfter - memBefore;
-                result.Success = true;
+                long compressedSize = compressedBytes.LongLength;
+                double ratio = originalSize == 0 ? 1.0 : (double)compressedSize / originalSize;
+                long memoryUsed = Math.Max(0, memoryAfter - memoryBefore);
+
+                return CompressionResult.SuccessResult(
+                    algorithmName,
+                    inputFilePath,
+                    outputFilePath,
+                    originalSize,
+                    compressedSize,
+                    ratio,
+                    stopwatch.Elapsed,
+                    memoryUsed);
             }
             catch (Exception ex)
             {
-                result.Success = false;
-                result.ErrorMessage = ex.Message;
+                return CompressionResult.ErrorResult(
+                    algorithmName,
+                    inputFilePath,
+                    outputFilePath,
+                    ex.Message);
             }
-
-            return result;
         }
 
-        public CompressionResult Decompress(string algorithmName, string inputPath, string outputPath)
+        public CompressionResult Decompress(string algorithmName, string inputFilePath, string outputFilePath)
         {
-            var result = new CompressionResult
+            if (!TryGetAlgorithm(algorithmName, out var algorithm))
             {
-                AlgorithmName = algorithmName,
-                InputFilePath = inputPath,
-                OutputFilePath = outputPath
-            };
+                return CompressionResult.ErrorResult(
+                    algorithmName,
+                    inputFilePath,
+                    outputFilePath,
+                    "Algoritmo de descompresión no encontrado.");
+            }
 
             try
             {
-                var algorithm = FindAlgorithm(algorithmName);
-                if (algorithm == null)
-                {
-                    result.Success = false;
-                    result.ErrorMessage = "Algoritmo no encontrado.";
-                    return result;
-                }
+                var compressedBytes = File.ReadAllBytes(inputFilePath);
+                long compressedSize = compressedBytes.LongLength;
 
-                long compressedSize = new FileInfo(inputPath).Length;
-                result.CompressedSizeBytes = compressedSize;
+                var stopwatch = Stopwatch.StartNew();
+                long memoryBefore = GC.GetTotalMemory(true);
 
-                long memBefore = GC.GetTotalMemory(true);
-                var sw = Stopwatch.StartNew();
+                var decompressedBytes = algorithm.Decompress(compressedBytes);
 
-                algorithm.Decompress(inputPath, outputPath);
+                long memoryAfter = GC.GetTotalMemory(false);
+                stopwatch.Stop();
 
-                sw.Stop();
-                long memAfter = GC.GetTotalMemory(false);
+                File.WriteAllBytes(outputFilePath, decompressedBytes);
 
-                result.OriginalSizeBytes = new FileInfo(outputPath).Length;
-                result.ElapsedTime = sw.Elapsed;
-                result.MemoryUsedBytes = memAfter - memBefore;
-                result.Success = true;
+                long originalSize = decompressedBytes.LongLength;
+                double ratio = originalSize == 0 ? 1.0 : (double)compressedSize / originalSize;
+                long memoryUsed = Math.Max(0, memoryAfter - memoryBefore);
+
+                return CompressionResult.SuccessResult(
+                    algorithmName,
+                    inputFilePath,
+                    outputFilePath,
+                    originalSize,
+                    compressedSize,
+                    ratio,
+                    stopwatch.Elapsed,
+                    memoryUsed);
             }
             catch (Exception ex)
             {
-                result.Success = false;
-                result.ErrorMessage = ex.Message;
+                return CompressionResult.ErrorResult(
+                    algorithmName,
+                    inputFilePath,
+                    outputFilePath,
+                    ex.Message);
             }
-
-            return result;
         }
     }
 }

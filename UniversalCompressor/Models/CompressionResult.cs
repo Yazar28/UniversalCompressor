@@ -1,36 +1,60 @@
-﻿namespace UniversalCompressor.Models
+﻿using System;
+
+namespace UniversalCompressor.Models
 {
     public class CompressionResult
     {
-        // Nombre del algoritmo usado (Huffman, LZ77, LZ78)
+        public bool Success { get; set; }
         public string AlgorithmName { get; set; } = string.Empty;
-
-        // Rutas de archivo
         public string InputFilePath { get; set; } = string.Empty;
         public string OutputFilePath { get; set; } = string.Empty;
 
-        // Tamaños de archivo en bytes
         public long OriginalSizeBytes { get; set; }
         public long CompressedSizeBytes { get; set; }
-
-        // Tiempo que duró la operación
+        public double CompressionRatio { get; set; } 
         public TimeSpan ElapsedTime { get; set; }
-
-        // Memoria usada (en bytes)
         public long MemoryUsedBytes { get; set; }
 
-        // Tasa de compresión (ej: 0.35 = 35%)
-        public double CompressionRatio
+        public string ErrorMessage { get; set; } = string.Empty;
+
+        public static CompressionResult SuccessResult(
+            string algorithmName,
+            string inputPath,
+            string outputPath,
+            long originalSize,
+            long compressedSize,
+            double ratio,
+            TimeSpan elapsed,
+            long memoryUsed)
         {
-            get
+            return new CompressionResult
             {
-                if (OriginalSizeBytes == 0) return 0;
-                return (double)CompressedSizeBytes / OriginalSizeBytes;
-            }
+                Success = true,
+                AlgorithmName = algorithmName,
+                InputFilePath = inputPath,
+                OutputFilePath = outputPath,
+                OriginalSizeBytes = originalSize,
+                CompressedSizeBytes = compressedSize,
+                CompressionRatio = ratio,
+                ElapsedTime = elapsed,
+                MemoryUsedBytes = memoryUsed
+            };
         }
 
-        // Por si quieres saber si salió bien o hubo error
-        public bool Success { get; set; }
-        public string? ErrorMessage { get; set; }
+        public static CompressionResult ErrorResult(
+            string algorithmName,
+            string inputPath,
+            string outputPath,
+            string error)
+        {
+            return new CompressionResult
+            {
+                Success = false,
+                AlgorithmName = algorithmName,
+                InputFilePath = inputPath,
+                OutputFilePath = outputPath,
+                ErrorMessage = error
+            };
+        }
     }
 }
