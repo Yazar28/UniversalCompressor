@@ -40,6 +40,9 @@
             cmbAlgorithm = new ComboBox();
             lblTitle = new Label();
             grpInput = new GroupBox();
+            btnClearFiles = new Button();
+            btnAddFiles = new Button();
+            lstInputFiles = new ListBox();
             grpOutput = new GroupBox();
             grpSettings = new GroupBox();
             grpActions = new GroupBox();
@@ -49,6 +52,7 @@
             txtStats = new TextBox();
             statusStripMain = new StatusStrip();
             lblStatus = new ToolStripStatusLabel();
+            lblMultiple = new Label();
             panelDropZone.SuspendLayout();
             grpInput.SuspendLayout();
             grpOutput.SuspendLayout();
@@ -170,23 +174,57 @@
             // 
             // grpInput
             // 
+            grpInput.Controls.Add(lblMultiple);
+            grpInput.Controls.Add(btnClearFiles);
+            grpInput.Controls.Add(btnAddFiles);
+            grpInput.Controls.Add(lstInputFiles);
             grpInput.Controls.Add(lblInput);
             grpInput.Controls.Add(txtInputPath);
             grpInput.Controls.Add(btnBrowseInput);
             grpInput.Controls.Add(panelDropZone);
             grpInput.Location = new Point(12, 34);
             grpInput.Name = "grpInput";
-            grpInput.Size = new Size(1058, 171);
+            grpInput.Size = new Size(1058, 294);
             grpInput.TabIndex = 10;
             grpInput.TabStop = false;
             grpInput.Text = "Entrada del archivo";
+            grpInput.Enter += grpInput_Enter;
+            // 
+            // btnClearFiles
+            // 
+            btnClearFiles.Location = new Point(16, 260);
+            btnClearFiles.Name = "btnClearFiles";
+            btnClearFiles.Size = new Size(161, 23);
+            btnClearFiles.TabIndex = 6;
+            btnClearFiles.Text = "Limpiar lista";
+            btnClearFiles.UseVisualStyleBackColor = true;
+            btnClearFiles.Click += btnClearFiles_Click;
+            // 
+            // btnAddFiles
+            // 
+            btnAddFiles.Location = new Point(16, 231);
+            btnAddFiles.Name = "btnAddFiles";
+            btnAddFiles.Size = new Size(161, 23);
+            btnAddFiles.TabIndex = 5;
+            btnAddFiles.Text = "Agregar archivos...";
+            btnAddFiles.UseVisualStyleBackColor = true;
+            btnAddFiles.Click += btnAddFiles_Click;
+            // 
+            // lstInputFiles
+            // 
+            lstInputFiles.FormattingEnabled = true;
+            lstInputFiles.ItemHeight = 15;
+            lstInputFiles.Location = new Point(16, 161);
+            lstInputFiles.Name = "lstInputFiles";
+            lstInputFiles.Size = new Size(1020, 64);
+            lstInputFiles.TabIndex = 4;
             // 
             // grpOutput
             // 
             grpOutput.Controls.Add(lblOutput);
             grpOutput.Controls.Add(txtOutputPath);
             grpOutput.Controls.Add(btnBrowseOutput);
-            grpOutput.Location = new Point(12, 211);
+            grpOutput.Location = new Point(12, 334);
             grpOutput.Name = "grpOutput";
             grpOutput.Size = new Size(1058, 100);
             grpOutput.TabIndex = 11;
@@ -197,7 +235,7 @@
             // 
             grpSettings.Controls.Add(lblAlgorithm);
             grpSettings.Controls.Add(cmbAlgorithm);
-            grpSettings.Location = new Point(12, 317);
+            grpSettings.Location = new Point(12, 440);
             grpSettings.Name = "grpSettings";
             grpSettings.Size = new Size(270, 69);
             grpSettings.TabIndex = 12;
@@ -208,7 +246,7 @@
             // 
             grpActions.Controls.Add(btnDecompress);
             grpActions.Controls.Add(btnCompress);
-            grpActions.Location = new Point(12, 392);
+            grpActions.Location = new Point(12, 515);
             grpActions.Name = "grpActions";
             grpActions.Size = new Size(270, 116);
             grpActions.TabIndex = 13;
@@ -238,7 +276,7 @@
             // grpStats
             // 
             grpStats.Controls.Add(txtStats);
-            grpStats.Location = new Point(288, 317);
+            grpStats.Location = new Point(288, 440);
             grpStats.Name = "grpStats";
             grpStats.Size = new Size(782, 191);
             grpStats.TabIndex = 14;
@@ -259,7 +297,7 @@
             // statusStripMain
             // 
             statusStripMain.Items.AddRange(new ToolStripItem[] { lblStatus });
-            statusStripMain.Location = new Point(0, 517);
+            statusStripMain.Location = new Point(0, 643);
             statusStripMain.Name = "statusStripMain";
             statusStripMain.Size = new Size(1082, 22);
             statusStripMain.TabIndex = 15;
@@ -273,11 +311,20 @@
             lblStatus.Text = "Listo";
             lblStatus.Click += lblStatus_Click;
             // 
+            // lblMultiple
+            // 
+            lblMultiple.AutoSize = true;
+            lblMultiple.Location = new Point(16, 139);
+            lblMultiple.Name = "lblMultiple";
+            lblMultiple.Size = new Size(165, 15);
+            lblMultiple.TabIndex = 7;
+            lblMultiple.Text = "Multiples archivos de entrada:";
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1082, 539);
+            ClientSize = new Size(1082, 665);
             Controls.Add(statusStripMain);
             Controls.Add(grpStats);
             Controls.Add(grpActions);
@@ -329,5 +376,9 @@
         private TextBox txtStats;
         private StatusStrip statusStripMain;
         private ToolStripStatusLabel lblStatus;
+        private Button btnClearFiles;
+        private Button btnAddFiles;
+        private ListBox lstInputFiles;
+        private Label lblMultiple;
     }
 }

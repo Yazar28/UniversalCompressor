@@ -201,16 +201,67 @@ namespace UniversalCompressor
             txtStats.Clear();
             SetStatus("Iniciando compresión...");
 
-            if (string.IsNullOrWhiteSpace(txtInputPath.Text) || !File.Exists(txtInputPath.Text))
+            var filesToCompress = new List<string>();
+
+            if (lstInputFiles.Items.Count > 0)
             {
-                MessageBox.Show(
-                    "Debes seleccionar un archivo de entrada válido.",
-                    "Archivo de entrada no válido",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning
-                );
-                SetStatus("Error: archivo de entrada no válido.");
-                return;
+                foreach (var item in lstInputFiles.Items)
+                {
+                    if (item is string path)
+                    {
+                        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+                        {
+                            MessageBox.Show(
+                                $"El archivo de la lista no existe:\n{path}",
+                                "Archivo no encontrado",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Warning);
+                            SetStatus("Error: uno de los archivos de la lista no existe.");
+                            return;
+                        }
+
+                        string ext = Path.GetExtension(path);
+                        if (!ext.Equals(".txt", StringComparison.OrdinalIgnoreCase))
+                        {
+                            MessageBox.Show(
+                                $"Solo se permiten archivos de texto (.txt) en la lista.\nArchivo inválido:\n{path}",
+                                "Tipo de archivo no válido",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Warning);
+                            SetStatus("Error: tipo de archivo no válido en la lista.");
+                            return;
+                        }
+
+                        filesToCompress.Add(path);
+                    }
+                }
+            }
+            else
+            {
+                if (string.IsNullOrWhiteSpace(txtInputPath.Text) || !File.Exists(txtInputPath.Text))
+                {
+                    MessageBox.Show(
+                        "Debes seleccionar un archivo de entrada válido.",
+                        "Archivo de entrada no válido",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                    SetStatus("Error: archivo de entrada no válido.");
+                    return;
+                }
+
+                string ext = Path.GetExtension(txtInputPath.Text);
+                if (!ext.Equals(".txt", StringComparison.OrdinalIgnoreCase))
+                {
+                    MessageBox.Show(
+                        "Para comprimir se espera un archivo de texto (.txt).",
+                        "Tipo de archivo no válido",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning);
+                    SetStatus("Error: tipo de archivo de entrada no válido.");
+                    return;
+                }
+
+                filesToCompress.Add(txtInputPath.Text);
             }
 
             if (string.IsNullOrWhiteSpace(txtOutputPath.Text))
@@ -219,38 +270,20 @@ namespace UniversalCompressor
                     "Debes seleccionar un archivo de salida.",
                     "Archivo de salida no válido",
                     MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning
-                );
+                    MessageBoxIcon.Warning);
                 SetStatus("Error: archivo de salida no válido.");
                 return;
             }
 
-            string inputExt = Path.GetExtension(txtInputPath.Text);
             string outputExt = Path.GetExtension(txtOutputPath.Text);
-
-            if (inputExt.Equals(".myzip", StringComparison.OrdinalIgnoreCase) &&
-                outputExt.Equals(".txt", StringComparison.OrdinalIgnoreCase))
+            if (!outputExt.Equals(".myzip", StringComparison.OrdinalIgnoreCase))
             {
                 MessageBox.Show(
-                    "Con archivo de entrada .myzip y salida .txt debes usar el botón 'Descomprimir', no 'Comprimir'.",
-                    "Acción no válida",
+                    "Para comprimir se espera un archivo de salida con extensión .myzip.",
+                    "Extensión de salida no válida",
                     MessageBoxButtons.OK,
-                    MessageBoxIcon.Information
-                );
-                SetStatus("Acción de compresión no válida para .myzip → .txt.");
-                return;
-            }
-
-            if (!inputExt.Equals(".txt", StringComparison.OrdinalIgnoreCase) ||
-                !outputExt.Equals(".myzip", StringComparison.OrdinalIgnoreCase))
-            {
-                MessageBox.Show(
-                    "Para comprimir se espera archivo de entrada .txt y archivo de salida .myzip.",
-                    "Extensiones incompatibles",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning
-                );
-                SetStatus("Error: extensiones incompatibles para compresión.");
+                    MessageBoxIcon.Warning);
+                SetStatus("Error: extensión de salida no válida.");
                 return;
             }
 
@@ -260,8 +293,7 @@ namespace UniversalCompressor
                     "Debes seleccionar un algoritmo de compresión.",
                     "Algoritmo no seleccionado",
                     MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning
-                );
+                    MessageBoxIcon.Warning);
                 SetStatus("Error: algoritmo no seleccionado.");
                 return;
             }
@@ -270,11 +302,10 @@ namespace UniversalCompressor
 
             try
             {
-                var result = _compressionService.Compress(
+                var result = _compressionService.CompressMultiple(
                     algorithmName,
-                    txtInputPath.Text,
-                    txtOutputPath.Text
-                );
+                    filesToCompress,
+                    txtOutputPath.Text);
 
                 ShowResult(result, "Compresión");
             }
@@ -284,8 +315,7 @@ namespace UniversalCompressor
                     "Ocurrió un error inesperado durante la compresión:\n" + ex.Message,
                     "Error",
                     MessageBoxButtons.OK,
-                    MessageBoxIcon.Error
-                );
+                    MessageBoxIcon.Error);
                 SetStatus("Error inesperado en compresión.");
             }
         }
@@ -310,12 +340,12 @@ namespace UniversalCompressor
             if (string.IsNullOrWhiteSpace(txtOutputPath.Text))
             {
                 MessageBox.Show(
-                    "Debes seleccionar un archivo de salida.",
-                    "Archivo de salida no válido",
+                    "Debes seleccionar una ruta de salida.",
+                    "Ruta de salida no válida",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Warning
                 );
-                SetStatus("Error inesperado en descompresión.");
+                SetStatus("Error: ruta de salida no válida.");
                 return;
             }
 
@@ -335,17 +365,22 @@ namespace UniversalCompressor
                 return;
             }
 
-            if (!inputExt.Equals(".myzip", StringComparison.OrdinalIgnoreCase) ||
-                !outputExt.Equals(".txt", StringComparison.OrdinalIgnoreCase))
+            if (!inputExt.Equals(".myzip", StringComparison.OrdinalIgnoreCase))
             {
                 MessageBox.Show(
-                    "Para descomprimir se espera archivo de entrada .myzip y archivo de salida .txt.",
-                    "Extensiones incompatibles",
+                    "Para descomprimir se espera un archivo de entrada con extensión .myzip.",
+                    "Extensión de entrada no válida",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Warning
                 );
-                SetStatus("Error: extensiones incompatibles para descompresión.");
+                SetStatus("Error: extensión de entrada no válida para descompresión.");
                 return;
+            }
+
+            string? outputDirectory = Path.GetDirectoryName(txtOutputPath.Text);
+            if (string.IsNullOrEmpty(outputDirectory))
+            {
+                outputDirectory = Environment.CurrentDirectory;
             }
 
             if (cmbAlgorithm.SelectedIndex <= 0)
@@ -364,10 +399,10 @@ namespace UniversalCompressor
 
             try
             {
-                var result = _compressionService.Decompress(
+                var result = _compressionService.DecompressMultiple(
                     algorithmName,
                     txtInputPath.Text,
-                    txtOutputPath.Text
+                    outputDirectory
                 );
 
                 ShowResult(result, "Descompresión");
@@ -375,15 +410,15 @@ namespace UniversalCompressor
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    "Ocurrió un error inesperado durante la descomposición:\n" + ex.Message,
+                    "Ocurrió un error inesperado durante la descompresión:\n" + ex.Message,
                     "Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error
                 );
-                SetStatus("Error inesperado en descomposición.");
+                SetStatus("Error inesperado en descompresión.");
             }
         }
-        private void txtInputPath_TextChanged(object sender, EventArgs e) 
+        private void txtInputPath_TextChanged(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(txtInputPath.Text))
                 return;
@@ -413,6 +448,38 @@ namespace UniversalCompressor
             }
         }
 
+        private void btnAddFiles_Click(object sender, EventArgs e)
+        {
+            using (var dialog = new OpenFileDialog())
+            {
+                dialog.Title = "Seleccionar archivos de texto";
+                dialog.Filter = "Archivos de texto (*.txt)|*.txt";
+                dialog.Multiselect = true;
+
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    foreach (var file in dialog.FileNames)
+                    {
+                        if (!lstInputFiles.Items.Contains(file))
+                        {
+                            lstInputFiles.Items.Add(file);
+                        }
+                    }
+
+                    if (lstInputFiles.Items.Count > 0)
+                    {
+                        SetStatus("Archivos de entrada agregados a la lista.");
+                    }
+                }
+            }
+        }
+
+        private void btnClearFiles_Click(object sender, EventArgs e)
+        {
+            lstInputFiles.Items.Clear();
+            SetStatus("Lista de archivos de entrada vaciada.");
+        }
+
         private void label1_Click(object sender, EventArgs e) { }
         private void panel1_Paint(object sender, PaintEventArgs e) { }
         private void lblDropHere_Click(object sender, EventArgs e) { }
@@ -421,5 +488,6 @@ namespace UniversalCompressor
         private void lblTitle_Click(object sender, EventArgs e) { }
         private void statusStripMain_ItemClicked(object sender, ToolStripItemClickedEventArgs e) { }
         private void lblStatus_Click(object sender, EventArgs e) { }
+        private void grpInput_Enter(object sender, EventArgs e) { }
     }
 }
